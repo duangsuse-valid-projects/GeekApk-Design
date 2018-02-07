@@ -4,7 +4,7 @@
 
 ### Conventions
 
-- 对于所有类型的数据，其除 ID 外各项属性的值应分别保存在继承链上 **拥有对应属性** 的资源容器内，并通过 ID 相关联。
+- 对于所有类型的数据，其除 ID 外各项属性的值应分别保存在继承链上 **拥有对应属性** 的资源容器内，通过 ID 相关联，并通过 subtype 字段保存继承关系。
 
 例如，对于一个 App 类型的、ID 为 `9985ea72-550f-4306-83b0-18faa09bc356` 的数据项，在数据库中应有如下表示:
 
@@ -16,6 +16,7 @@ title = ...
 created_by = ...
 create_time = ...
 update_time = ...
+subtype = App
 ```
 
 Table `App`:
@@ -44,6 +45,7 @@ Topic (主题) 是包含 **讨论** 、 **评分** 、 **收藏** 的类型。
 | n_likes | u64 | 收到 Like 的数量 |
 | create_time | u64 | 创建时间 (Unix timestamp, 毫秒) |
 | update_time | u64 | 更新时间 (Unix timestamp, 毫秒) |
+| subtype | varchar(32) | 子类型名称 |
 
 - Comment
 
@@ -74,6 +76,7 @@ Account (账户) 是 GeekApk 认证模型的核心部分，与 Topic 等由用�
 | icon_id | UUID | 图标静态资源 ID |
 | create_time | u64 | 创建时间 (Unix timestamp, 毫秒) |
 | update_time | u64 | 更新时间 (Unix timestamp, 毫秒) |
+| subtype | varchar(32) | 子类型名称 |
 
 - User
 
@@ -158,3 +161,16 @@ Article (文章) 是用户发表的文字内容，在独立的页面上展示。
 | :--- | :--- | :--- |
 | id | UUID | 对象 ID |
 | content | text | 内容 |
+
+- Favorite
+
+Favorite (收藏) 是用户保存的 Topic 。
+
+属性:
+
+| 名称 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| id | UUID | 对象 ID |
+| account_id | UUID | 账户 ID |
+| topic_id | UUID | 主题 ID |
+| create_time | u64 | 创建时间 (Unix timestamp, 毫秒) |

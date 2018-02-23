@@ -4,38 +4,86 @@
 
 以下所涉及的 API URL 均省略由实现指定的前缀。
 
-### Format
+本文档仅对 RESTful API 设计起导向作用，并不代表最终的 API
 
-API 请求第一级路径应与 Model.md 中定义的模型名称相对应。
+## 请求规范
+* 遵循 RESTful API
+* 使用 HTTP 动词代替 URL 中出现的动词
+* 请求地址一律为 `<HTTP 动词> /资源名/...`
+* 返回数据类型一律为 `json`
 
-当所请求的资源类型继承了其他类型时，除特殊情况外，处理该类请求的 API 应位于 **请求的字段所属类型中，位于继承链最下端 (最接近具体类型) 的类型所对应的路径** 下。
+## 资源: 用户
+对应的资源为 `users`
 
-例如，对于一个 App 类型的、ID 为 `9985ea72-550f-4306-83b0-18faa09bc356` 的数据项， API 应有如下实现：
+#### 用户信息
+    /users/<uid>/details
 
-- 新增:
+#### 用户关注的 app
+    /users/<uid>/apps
 
-路径: /App/new (访问了只属于 App 类型的字段)
+#### 用户关注的人
+    /users/<uid>/followings
 
-参数: `title`, `package_name`, `package_id`, `icon_id`, `description`
+#### 关注该用户的人
+    /users/<uid>/followers
 
-- 移除:
+#### 用户创建的应用集
+    /users/<uid>/collections
 
-路径: /Topic/remove (所有访问的字段均属于继承链最上端的 Topic 类型)
+#### 用户的动态
+    /users/<uid>/posts
 
-参数: `id`
+## 其他资源以此类推
 
-(后端处理时，应通过 subtype 找到具体类型完成彻底的删除)
+## 说明
+* 如果请求的资源将会返回另一个资源的信息，那么只应该返回另一个资源中重要的信息，返回结果中需要包含另一个资源的请求方式，以便客户端获取详细信息。下面这种情况：
 
-- 修改:
 
-路径: /App/update (有可能访问了只属于 App 类型的字段)
+* 用户 1 和 2 关注了用户 0，现在客户端请求关注用户 0 的用户：
+    ```
+    GET /users/0/followers  
+    ```
 
-参数: `title`, `package_name`, `package_id`, `icon_id`, `description` (均可为空)
+    服务端将会返回类似这样的结果:
+    ```json
+    {
+        "followers": [
+            {
+                "name": "...",
+                "id": 1,
+                "avatar": "...",
+                "refer": "/users/1/details",
+            },
+            {
+                "name": "...",
+                "id": 2,
+                "avatar": "...",
+                "refer": "/users/2/details",
+            }
+        ]
+    }
+    ```
 
-- 读取:
-
-路径: /App/get (访问了只属于 App 类型的字段，包含于接口返回数据中)
-
-- 特殊情况:
-
-例如，获取应用推荐列表时，即使接口只返回了 `title` 和 `id` 字段，该接口也显然应位于 `/App` 下。
+* 用户 0 发布了 2 条动态，现在请求用户 0 的动态
+    ```
+    GET /users/0/posts
+    ```
+    服务端将会返回类似这样的结果:
+    ```json
+    {
+        "posts": [
+            {
+                "id": 123,
+                "title": "...",
+                "content": "...",
+                "refer": "/posts/123"
+            },
+            {
+                "id": 456,
+                "title": "...",
+                "content": "...",
+                "refer": "/posts/456"
+            }
+        ]
+    }
+    ```
